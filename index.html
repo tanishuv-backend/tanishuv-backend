@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SevgiCity</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}
+    body{background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}
+    .container{width:100%;max-width:400px;text-align:center}
+    .logo{font-size:80px;margin-bottom:10px;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+    h1{color:white;font-size:48px;margin-bottom:10px;text-shadow:2px 2px 4px rgba(0,0,0,0.3)}
+    h2{color:rgba(255,255,255,0.9);font-size:18px;margin-bottom:30px}
+    .tabs{display:flex;gap:10px;margin-bottom:20px}
+    .tab{flex:1;padding:15px;border:none;border-radius:25px;background:rgba(255,255,255,0.2);color:white;cursor:pointer;font-size:16px;transition:all 0.3s}
+    .tab.active{background:white;color:#667eea;font-weight:bold}
+    .form-box{background:rgba(255,255,255,0.15);backdrop-filter:blur(10px);padding:30px;border-radius:20px}
+    .form-title{color:white;font-size:24px;margin-bottom:20px}
+    input,select{width:100%;padding:15px;margin-bottom:15px;border:none;border-radius:15px;font-size:16px;background:rgba(255,255,255,0.9)}
+    input:focus,select:focus{outline:2px solid #667eea}
+    button{width:100%;padding:15px;border:none;border-radius:25px;background:white;color:#667efa;font-size:18px;font-weight:bold;cursor:pointer;transition:all 0.3s}
+    button:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,0.2)}
+    .msg{margin-top:15px;padding:10px;border-radius:10px;display:none}
+    .msg.error{background:#ff6b6b;color:white}
+    .msg.success{background:#51cf66;color:white}
+    .hidden{display:none !important}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">💕</div>
+    <h1>SevgiCity</h1>
+    <h2>O'zbekistonning eng yaxshi tanishuv platformasi</h2>
+    
+    <div class="tabs">
+      <button class="tab active" onclick="showLogin()">Kirish</button>
+      <button class="tab" onclick="showRegister()">Ro'yxatdan o'tish</button>
+    </div>
+    
+    <!-- Login Form -->
+    <div id="loginBox" class="form-box">
+      <div class="form-title">Kirish</div>
+      <input type="email" id="loginEmail" placeholder="Email">
+      <input type="password" id="loginPassword" placeholder="Parol">
+      <button onclick="login()">Kirish</button>
+      <div id="loginMsg" class="msg"></div>
+    </div>
+    
+    <!-- Register Form -->
+    <div id="registerBox" class="form-box hidden">
+      <div class="form-title">Ro'yxatdan o'tish</div>
+      <input type="text" id="regName" placeholder="Ismingiz">
+      <input type="email" id="regEmail" placeholder="Email">
+      <input type="password" id="regPassword" placeholder="Parol">
+      <input type="number" id="regAge" placeholder="Yosh">
+      <input type="text" id="regCity" placeholder="Shahar">
+      <select id="regGender">
+        <option value="">Jins</option>
+        <option value="Erkak">Erkak</option>
+        <option value="Ayol">Ayol</option>
+      </select>
+      <button onclick="register()">Ro'yxatdan o'tish</button>
+      <div id="regMsg" class="msg"></div>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboard" class="hidden" style="position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#667eea,#764ba2);overflow-y:auto;padding:20px">
+    <div style="max-width:800px;margin:0 auto">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <h2 style="color:white">👋 Salom, <span id="userName"></span></h2>
+        <button onclick="logout()" style="width:auto;padding:10px 20px">Chiqish</button>
+      </div>
+      
+      <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+        <button onclick="showSection('users')" style="flex:1;min-width:120px">👥 Foydalanuvchilar</button>
+        <button onclick="showSection('posts')" style="flex:1;min-width:120px">📝 Mavzular</button>
+        <button onclick="showSection('chat')" style="flex:1;min-width:120px">💬 Chat</button>
+        <button onclick="showSection('profile')" style="flex:1;min-width:120px">⚙️ Profil</button>
+      </div>
+      
+      <div id="usersSection" class="section">
+        <h3 style="color:white;margin-bottom:15px">Foydalanuvchilar</h3>
+        <div id="usersList"></div>
+      </div>
+      
+      <div id="postsSection" class="section hidden">
+        <h3 style="color:white;margin-bottom:15px">Mavzular</h3>
+        <button onclick="showPostForm()" style="width:auto;margin-bottom:15px">+ Yangi mavzu</button>
+        <div id="postForm" class="hidden" style="background:rgba(255,255,255,0.15);padding:20px;border-radius:15px;margin-bottom:15px">
+          <input type="text" id="postTitle" placeholder="Sarlavha" style="margin-bottom:10px">
+          <textarea id="postContent" placeholder="Mazmuni..." style="width:100%;padding:15px;border-radius:15px;border:none;margin-bottom:10px;min-height:100px"></textarea>
+          <button onclick="createPost()" style="width:auto">Yuborish</button>
+        </div>
+        <div id="postsList"></div>
+      </div>
+      
+      <div id="chatSection" class="section hidden">
+        <h3 style="color:white;margin-bottom:15px">Xabarlar</h3>
+        <select id="chatUser" onchange="loadChat()" style="margin-bottom:15px">
+          <option value="">Foydalanuvchini tanlang</option>
+        </select>
+        <div id="chatBox" style="background:rgba(255,255,255,0.15);height:300px;overflow-y:auto;padding:20px;border-radius:15px;margin-bottom:15px">
+          <p style="color:rgba(255,255,255,0.7);text-align:center">Suhbatdoshni tanlang</p>
+        </div>
+        <div style="display:flex;gap:10px">
+          <input type="text" id="chatInput" placeholder="Xabar yozing..." style="flex:1;margin-bottom:0" onkeypress="if(event.key==='Enter')sendMessage()">
+          <button onclick="sendMessage()" style="width:auto">Yuborish</button>
+        </div>
+      </div>
+      
+      <div id="profileSection" class="section hidden">
+        <h3 style="color:white;margin-bottom:15px">Profil</h3>
+        <div style="background:rgba(255,255,255,0.15);padding:20px;border-radius:15px">
+          <input type="text" id="profName" placeholder="Ism">
+          <input type="number" id="profAge" placeholder="Yosh">
+          <input type="text" id="profBio" placeholder="Bio">
+          <button onclick="updateProfile()">Saqlash</button>
+          <div id="profMsg" class="msg" style="margin-top:10px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const API = 'http://localhost:3000/api';
+let token = localStorage.getItem('token');
+let currentUser = null;
+let currentChat = null;
+
+// Agar token bo'lsa, avto-login
+if(token) initDashboard();
+
+function showLogin(){
+  document.querySelectorAll('.tab')[0].classList.add('active');
+  document.querySelectorAll('.tab')[1].classList.remove('active');
+  document.getElementById('loginBox').classList.remove('hidden');
+  document.getElementById('registerBox').classList.add('hidden');
+}
+
+function showRegister(){
+  document.querySelectorAll('.tab')[0].classList.remove('active');
+  document.querySelectorAll('.tab')[1].classList.add('active');
+  document.getElementById('loginBox').classList.add('hidden');
+  document.getElementById('registerBox').classList.remove('hidden');
+}
+
+function showMsg(id, text, isError){
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'msg ' + (isError ? 'error' : 'success');
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 5000);
+}
+
+async function register(){
+  const data = {
+    name: document.getElementById('regName').value,
+    email: document.getElementById('regEmail').value,
+    password: document.getElementById('regPassword').value,
+    age: document.getElementById('regAge').value,
+    gender: document.getElementById('regGender').value
+  };
+  
+  if(!data.name || !data.email || !data.password){
+    showMsg('regMsg', 'Barcha maydonlarni to\'ldiring!', true);
+    return;
+  }
+  
+  try{
+    const res = await fetch(API + '/register', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data)
+    });
+    const result = await res.json();
+    
+    if(result.success){
+      localStorage.setItem('token', result.token);
+      token = result.token;
+      showMsg('regMsg', 'Muvaffaqiyatli! Kirish...', false);
+      setTimeout(() => initDashboard(), 1000);
+    } else {
+      showMsg('regMsg', result.error || 'Xatolik!', true);
+    }
+  } catch(err){
+    showMsg('regMsg', 'Serverga ulanishda xatolik: ' + err.message, true);
+  }
+}
+
+async function login(){
+  const data = {
+    email: document.getElementById('loginEmail').value,
+    password: document.getElementById('loginPassword').value
+  };
+  
+  try{
+    const res = await fetch(API + '/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data)
+    });
+    const result = await res.json();
+    
+    if(result.success){
+      localStorage.setItem('token', result.token);
+      token = result.token;
+      initDashboard();
+    } else {
+      showMsg('loginMsg', result.error || 'Xatolik!', true);
+    }
+  } catch(err){
+    showMsg('loginMsg', 'Serverga ulanishda xatolik!', true);
+  }
+}
+
+function initDashboard(){
+  document.querySelector('.container').classList.add('hidden');
+  document.getElementById('dashboard').classList.remove('hidden');
+  loadProfile();
+  loadUsers();
+  loadPosts();
+}
+
+function logout(){
+  localStorage.removeItem('token');
+  token = null;
+  location.reload();
+}
+
+async function loadProfile(){
+  try{
+    const res = await fetch(API + '/profile', {
+      headers: {'Authorization': 'Bearer ' + token}
+    });
+    currentUser = await res.json();
+    document.getElementById('userName').textContent = currentUser.name;
+    document.getElementById('profName').value = currentUser.name || '';
+    document.getElementById('profAge').value = currentUser.age || '';
+    document.getElementById('profBio').value = currentUser.bio || '';
+  } catch(err){
+    console.log('Profil yuklanmadi:', err);
+  }
+}
+
+function showSection(sec){
+  document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+  document.getElementById(sec + 'Section').classList.remove('hidden');
+  if(sec === 'users') loadUsers();
+  if(sec === 'posts') loadPosts();
+  if(sec === 'chat') loadChatUsers();
+}
+
+async function loadUsers(){
+  try{
+    const res = await fetch(API + '/users', {
+      headers: {'Authorization': 'Bearer ' + token}
+    });
+    const users = await res.json();
+    
+    let html = '';
+    users.forEach(u => {
+      html += `<div style="background:rgba(255,255,255,0.15);padding:15px;border-radius:15px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+        <div style="color:white">
+          <strong>${u.name}</strong> ${u.age ? '('+u.age+')' : ''} ${u.gender || ''}
+          <br><small>${u.bio || ''}</small>
+        </div>
+        <button onclick="likeUser(${u.id})" style="width:auto;padding:8px 15px">❤️ Like</button>
+      </div>`;
+    });
+    document.getElementById('usersList').innerHTML = html || '<p style="color:white;text-align:center">Hozircha foydalanuvchilar yo\'q</p>';
+  } catch(err){
+    console.log('Foydalanuvchilar yuklanmadi:', err);
+  }
+}
+
+async function likeUser(id){
+  try{
+    const res = await fetch(API + '/like/' + id, {
+      method: 'POST',
+      headers: {'Authorization': 'Bearer ' + token}
+    });
+    const result = await res.json();
+    alert(result.match ? '🎉 Oqimli like!' : 'Like bosildi! 💕');
+  } catch(err){
+    alert('Xatolik!');
+  }
+}
+
+async function loadPosts(){
+  try{
+    const res = await fetch(API + '/posts');
+    const posts = await res.json();
+    
+    let html = '';
+    posts.forEach(p => {
+      html += `<div style="background:rgba(255,255,255,0.15);padding:15px;border-radius:15px;margin-bottom:10px;color:white">
+        <strong>${p.title}</strong> <small>by ${p.author_name}</small>
+        <p>${p.content}</p>
+        <small>${new Date(p.created_at).toLocaleDateString()}</small>
+      </div>`;
+    });
+    document.getElementById('postsList').innerHTML = html || '<p style="color:white;text-align:center">Hozircha mavzular yo\'q</p>';
+  } catch(err){
+    console.log('Postlar yuklanmadi:', err);
+  }
+}
+
+function showPostForm(){
+  document.getElementById('postForm').classList.toggle('hidden');
+}
+
+async function createPost(){
+  const data = {
+    title: document.getElementById('postTitle').value,
+    content: document.getElementById('postContent').value
+  };
+  
+  try{
+    const res = await fetch(API + '/posts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify(data)
+    });
+    const result = await res.json();
+    if(result.success){
+      document.getElementById('postTitle').value = '';
+      document.getElementById('postContent').value = '';
+      document.getElementById('postForm').classList.add('hidden');
+      loadPosts();
+    }
+  } catch(err){
+    alert('Xatolik!');
+  }
+}
+
+async function loadChatUsers(){
+  try{
+    const res = await fetch(API + '/users', {
+      headers: {'Authorization': 'Bearer ' + token}
+    });
+    const users = await res.json();
+    
+    let html = '<option value="">Foydalanuvchini tanlang</option>';
+    users.forEach(u => {
+      html += `<option value="${u.id}">${u.name}</option>`;
+    });
+    document.getElementById('chatUser').innerHTML = html;
+  } catch(err){
+    console.log('Chat foydalanuvchilari yuklanmadi:', err);
+  }
+}
+
+async function loadChat(){
+  const userId = document.getElementById('chatUser').value;
+  if(!userId) return;
+  currentChat = userId;
+  
+  try{
+    const res = await fetch(API + '/messages/' + userId, {
+      headers: {'Authorization': 'Bearer ' + token}
+    });
+    const messages = await res.json();
+    
+    let html = '';
+    messages.forEach(m => {
+      const isMe = m.sender_id == currentUser.id;
+      html += `<div style="text-align:${isMe ? 'right' : 'left'};margin-bottom:10px">
+        <span style="display:inline-block;background:${isMe ? 'white' : 'rgba(255,255,255,0.3)'};color:${isMe ? '#667eea' : 'white'};padding:10px 15px;border-radius:15px;max-width:70%">
+          ${m.content}
+        </span>
+      </div>`;
+    });
+    document.getElementById('chatBox').innerHTML = html;
+    document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
+  } catch(err){
+    console.log('Xabarlar yuklanmadi:', err);
+  }
+}
+
+async function sendMessage(){
+  const content = document.getElementById('chatInput').value;
+  if(!content || !currentChat) return;
+  
+  try{
+    await fetch(API + '/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({receiver_id: currentChat, content})
+    });
+    document.getElementById('chatInput').value = '';
+    loadChat();
+  } catch(err){
+    alert('Xabar yuborilmadi!');
+  }
+}
+
+async function updateProfile(){
+  const data = {
+    name: document.getElementById('profName').value,
+    age: document.getElementById('profAge').value,
+    bio: document.getElementById('profBio').value
+  };
+  
+  try{
+    const res = await fetch(API + '/profile', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify(data)
+    });
+    const result = await res.json();
+    showMsg('profMsg', 'Profil yangilandi!', false);
+    loadProfile();
+  } catch(err){
+    showMsg('profMsg', 'Xatolik!', true);
+  }
+}
+</script>
+</body>
+</html>
